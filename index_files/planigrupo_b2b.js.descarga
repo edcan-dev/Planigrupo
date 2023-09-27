@@ -1,0 +1,2907 @@
+"use strict";
+
+var siteGo = true;
+var pWPUrl = '';
+
+var pgNav;
+var pgSearch;
+var pgHero;
+var pgSliderA;
+var pgSliderB;
+var pgSliderC;
+
+var pgAboutCapMod;
+var pgPortMap;
+var pgInvestNav;
+var pgInvesAccordians;
+var pgKeyTenants;
+
+var pgStockTicker;
+
+var pgPCheck;
+
+var pgPageWidth;
+
+var pgMainDom;
+var pgShftMenuDom;
+var pgShftSearchDom;
+
+var pgTopNavDom;
+var pgSearchOpen = false;
+var pgNavOpen = false;
+
+var pgDesktop = true;
+var aboutCapabilityPresent = false;
+var aboutCapMobileOn = false;
+
+var sliderCount = [];
+
+var sliderA;
+var sliderB;
+var sliderAIsPresent = false;
+var sliderBIsPresent = false;
+
+var pageIsResized = false;
+
+var sliderSpeed = 25;
+
+var pgMobileSearchBar;
+var mobileSearchPresent = false;
+
+var msEdge = false;
+var msIE = false;
+
+function planiGrupoMain() {
+	window.addEventListener('load', planiGrupoInit, false);
+}
+
+function getInternetExplorerVersion()
+{
+	let rv = -1;
+	let ua;
+	let re;
+	if (navigator.appName == 'Microsoft Internet Explorer')
+	{
+		ua = navigator.userAgent;
+		re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+		if (re.exec(ua) != null)
+			rv = parseFloat( RegExp.$1 );
+	}
+	else if (navigator.appName == 'Netscape')
+	{
+		ua = navigator.userAgent;
+		re  = new RegExp("Trident/.*rv:([0-9]{1,}[\.0-9]{0,})");
+		if (re.exec(ua) != null)
+			rv = parseFloat( RegExp.$1 );
+	}
+	return rv;
+}
+
+function planiGrupoInit(){
+
+	window.removeEventListener('load', planiGrupoInit, false);
+
+	if (getInternetExplorerVersion() === 11) {
+		msIE = true;
+	}
+
+	if (/Edge\/\d./i.test(navigator.userAgent)){
+		msEdge = true;
+	}
+
+
+	if (siteGo) {
+		pWPUrl = '/wp-content/themes/planigrupob2b/';
+	}
+
+	pgPageWidth = document.body.offsetWidth;
+	if (pgPageWidth > 1024) {
+		pgDesktop = true;
+	} else {
+		pgDesktop = false;
+	}
+
+	pgMainDom = document.getElementById("main");
+	let pgShiftDom = document.getElementById("mobileMenuShifter");
+	if ( pgShiftDom !== null ) {
+		pgShftMenuDom = pgShiftDom.children[0];
+		pgShftSearchDom = pgShiftDom.children[1];
+	}
+
+	let sDom = document.getElementById("mobileMenu");
+	if (sDom !== null) {
+		pgNav = new PlanigrupoHeaderNav(sDom);
+	}
+
+	pgHero = new PlanigrupoHero();
+
+	sDom = document.getElementById("sliderA");
+	if (sDom !== null) {
+		sliderAIsPresent = true;
+		sliderA = new PlanigrupoSlider(sDom);
+		sliderA.slider(sDom, "TopSlider");
+	}
+
+	sDom = document.getElementById("sliderB");
+	if (sDom !== null) {
+		sliderBIsPresent = true;
+		sliderB = new PlanigrupoSlider(sDom);
+		sliderB.slider(sDom, "BotSlider");
+	}
+
+	sDom = document.getElementById("CapabilitiesModule");
+	if (sDom !== null) {
+		aboutCapabilityPresent = true;
+		pgAboutCapMod = new PlanigrupoCapMod(sDom);
+	}
+
+	if (pgDesktop) {
+		sDom = document.getElementById("PortfolioMap");
+		if (sDom !== null) {
+			pgPortMap = new PlanigrupoPortfolioMap(sDom);
+		}
+	}
+
+	sDom = document.getElementById("pageNavBarShell");
+	if (sDom !== null) {
+		pgInvestNav = new PlanigrupoInvestorNavigation(sDom);
+	}
+
+	sDom = document.getElementsByClassName("accordion");
+	if (sDom !== null) {
+		pgInvesAccordians = new PlanigrupoInvestorAccordions(sDom);
+	}
+
+	sDom = document.getElementById("pdTenantShell");
+	if (sDom !== null) {
+		pgKeyTenants = new KeyTenantsSlider(sDom);
+	}
+
+	sDom = document.getElementById("mobileSearchButton");
+	if (sDom !== null) {
+		pgMobileSearchBar = new PlanigrupoShowMobileSearchBar(sDom);
+		mobileSearchPresent = true;
+	}
+
+	sDom = document.getElementById("FormIsPresent");
+	if (sDom !== null) {
+		let formTrack = new PlanigrupoTrackForm(sDom);
+	}
+
+	sDom = document.getElementById("eventCards");
+	if (sDom !== null) {
+		let planiCardEvents = new PlanigrupoCardEvents(sDom);
+	}
+
+	sDom = document.getElementById("financialGridMatrix");
+	if (sDom !== null) {
+		let financeMatrix = new PlanigrupoFinancialMatrix(sDom);
+	}
+
+	sDom = document.getElementById("eventsCalendar");
+	if (sDom !== null) {
+		let eventsCalendar = new PlanigrupEventsCalendar(sDom);
+	}
+
+	sDom = document.getElementById("PostGallery");
+	if (sDom !== null) {
+		let pGallery = new PlanigrupoPostGallery(sDom);
+	}
+
+	pgPCheck = new PlanigrupoPageChecker();
+
+}
+
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+/* POST GALLERY * * + + + + + + + + + + + + + + + + + + + + +>> */
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+var PlanigrupoPostGallery = (function() {
+
+	let buttonClick = true;
+	let imgDom;
+	let controlDom;
+	let imgGrp = [];
+	let dotDom;
+	let actDot;
+	let l_Btn;
+	let r_tBtn;
+	let iCnt = 0;
+	let iDx = 0;
+	let gLen = 0;
+	let domStr = "";
+	let imgStr = "";
+
+	//TOUCH VARS * >
+	let mobileTouchGo = false;
+	let touchAreaDom;
+	let TouchGrp;
+	let Touch;
+	let TXStart;
+	let TYStart;
+	let tchTmrGo;
+	let tchTmr;
+	let bool_TGo = true;
+	let boolTriggered;
+	let bool_TMove;
+	let bool_TEnd;
+	let touchDir;
+
+	let scrollY = 0;
+	let syStore = 0;
+// * * * * * * *
+
+	function PlanigrupoPostGallery(nDom) {
+
+		imgDom = nDom;
+		controlDom = imgDom.children[0];
+		l_Btn = controlDom.children[0];
+		r_tBtn = controlDom.children[1];
+		dotDom = controlDom.children[2].children[0];
+		actDot = dotDom.children[0];
+		touchAreaDom = controlDom.children[3];
+
+		let imgCup = imgDom.children[1];
+
+		gLen = imgCup.children.length;
+		for (iDx = 0; iDx < gLen; iDx++) {
+			imgGrp.push(imgCup.children[iDx].innerHTML);
+		}
+
+		if (pgDesktop) {
+			l_Btn.style.display = "block";
+			r_tBtn.style.display = "block";
+			imgDom.addEventListener('mouseup', buttonUp, false);
+		}
+		else
+		{
+			mobileTouchGo = true;
+			touchAreaDom.addEventListener('touchstart', function( eV ) { TGo(eV); }, false);
+			touchAreaDom.addEventListener('touchmove', function( eV ) { TMove(eV); }, false);
+			touchAreaDom.addEventListener('touchend', function( eV ) { TEnd(eV); }, false);
+			touchAreaDom.addEventListener('mouseover', function( eV ) { showDesktopArrows(eV); }, false);
+			touchAreaDom.style.display = "block";
+		}
+
+	}
+
+	function showDesktopArrows(eV) {
+		l_Btn.style.display = "block";
+		r_tBtn.style.display = "block";
+		touchAreaDom.style.display = "none";
+		touchAreaDom.removeEventListener('touchstart', function( eV ) { TGo(eV); }, false);
+		touchAreaDom.removeEventListener('touchmove', function( eV ) { TMove(eV); }, false);
+		touchAreaDom.removeEventListener('touchend', function( eV ) { TEnd(eV); }, false);
+
+		imgDom.addEventListener('mouseup', buttonUp, false);
+
+	}
+
+	/** ** ** +++++++++++++++++++++++++++++++++++++++++++>*/
+// TOUCH FUNCTIONS GO *** >
+	function TGo( eV ) {
+		TouchGrp = eV.targetTouches.length;
+		if ( TouchGrp === 1 ) {
+			if ( !bool_TGo ) {
+				Touch = eV.changedTouches[ 0 ];
+				TXStart = Touch.pageX;
+				TYStart = Touch.pageY;
+				bool_TGo = true;
+				tchTmrGo = true;
+				tchTmr = setTimeout(TouchTimedOut, 500);
+				scrollY = window.scrollY;
+				syStore = scrollY;
+			}
+		}
+		bool_TMove = false;
+		bool_TEnd = false;
+	}
+
+	function  TouchTimedOut() {
+		clearTimeout(tchTmr);
+		tchTmrGo = false;
+	}
+
+	function TMove( eV ) {
+		if ( bool_TGo ) {
+			scrollY = window.scrollY;
+			if ( TouchGrp === 1 ) {
+				Touch = eV.changedTouches[ 0 ];
+				if ( Touch.pageX > ( TXStart + 76 ) ) {
+					if ( tchTmrGo ) {
+						bool_TGo = false;
+						touchDir = "left";
+						boolTriggered = true;
+					}
+				} else if ( Touch.pageX < ( TXStart - 76 ) ) {
+					if ( tchTmrGo ) {
+						bool_TGo = false;
+						touchDir = "right";
+						boolTriggered = true;
+					}
+				}
+			}
+		}
+	}
+
+	function TEnd( eV ) {
+
+		if ( TouchGrp === 1 ) {
+			bool_TGo = false;
+			console.log("SYSTORE: " + syStore + " SCROLLY: " + scrollY);
+			if (syStore <= scrollY + 5 && syStore >= scrollY - 5) {
+				if ( boolTriggered ) {
+					boolTriggered = false;
+					if (Touch.pageY <= (TYStart + 48) && Touch.pageY >= (TYStart - 48)) {
+						if (buttonClick) {
+							buttonClick = false;
+							if (touchDir === "left") {
+								// LEFT
+								if (iCnt > 0) {
+									iCnt--;
+								} else {
+									iCnt = (gLen - 1);
+								}
+							} else {
+								// RIGHT
+								if (iCnt < (gLen - 1)) {
+									iCnt++;
+								} else {
+									iCnt = 0;
+								}
+							}
+							changeImage();
+						}
+					}
+				}
+			}
+		}
+	}
+
+// TOUCH FUNCTIONS END *** >
+
+	/** ** ** +++++++++++++++++++++++++++++++++++++++++++>*/
+	// DESKTOP + + +
+	function buttonUp(eV) {
+		domStr = eV.target.id;
+		if (domStr !== "popControls") {
+			if (buttonClick) {
+				buttonClick = false;
+				if (domStr === "btn_Left") {
+					if (iCnt > 0) {
+						iCnt--;
+					} else {
+						iCnt = (gLen - 1);
+					}
+				} else {
+					if (iCnt < (gLen - 1)) {
+						iCnt++;
+					} else {
+						iCnt = 0;
+					}
+				}
+				changeImage();
+			}
+		}
+	}
+
+	function changeImage()	{
+		imgStr = imgGrp[iCnt];
+		imgDom.style.backgroundImage = "url('" + imgStr + "')";
+		actDot.className = "sDotShadow";
+		actDot = dotDom.children[iCnt];
+		actDot.className = "sDotOnShadow";
+		buttonClick = true;
+	}
+
+	return PlanigrupoPostGallery;
+
+})();
+
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+/* EVENTS CALENDAR * * + + + + + + + + + + + + + + + + + + + + +>> */
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+var PlanigrupEventsCalendar = (function() {
+
+	let ecDom = null;
+	let dteInfoDom = null;
+	let idStr = "";
+	let tmpStr = "";
+	let strSplit = [];
+
+	let actDateStr = "333";
+	let actDayDom = null;
+	let actDateDom = null;
+	let infoOn = false;
+
+	let actClassStr = "";
+
+	function PlanigrupEventsCalendar(nDom) {
+		console.log("EVENTS CALENDAR");
+
+		ecDom = nDom;
+		dteInfoDom = document.getElementById("dateInfo");
+
+		ecDom.addEventListener('mouseup', buttonUp, false);
+
+	}
+
+	function buttonUp(eV) {
+		idStr = eV.target.id;
+
+		if (idStr !== "" && idStr !== "eventsCalendar" && idStr !== "dateInfo") {
+
+			strSplit = idStr.split("_");
+			tmpStr = strSplit[1];
+
+			if (tmpStr !== actDateStr) {
+				console.log("SHOW");
+				actDateStr = tmpStr;
+
+				if (actDateDom !== null) {
+					actDateDom.style.display = "none";
+					actDayDom.className = actClassStr;
+				}
+
+				actDayDom = eV.target;
+				actClassStr = actDayDom.className;
+				actDayDom.className = actClassStr+ " calOn";
+
+				tmpStr = "ev_" + tmpStr;
+				actDateDom = document.getElementById(tmpStr);
+				actDateDom.style.display = "block";
+				if (!infoOn) {
+					infoOn = true;
+					dteInfoDom.style.display = "block";
+				}
+			} else {
+				console.log("HIDE");
+				infoOn = false;
+				actDayDom.className = actClassStr;
+				dteInfoDom.style.display = "none";
+				actDateStr = "";
+			}
+		}
+	}
+
+
+
+	return PlanigrupEventsCalendar;
+
+})();
+
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+/* FINANCIAL MATRIX * * + + + + + + + + + + + + + + + + + + + + +>> */
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+var PlanigrupoFinancialMatrix = (function() {
+
+	let financeDom = null;
+
+	let finBtnDom = null;
+
+	let finLeftDom = null;
+	let finRightDom = null;
+	let idStr = "";
+	let strSplit = [];
+	let actStr = "L";
+
+	let blDom = null;
+	let brDom = null;
+	let tmpStr = "";
+
+	function PlanigrupoFinancialMatrix(nDom) {
+		console.log("FINANCIAL MATRIX");
+		financeDom = nDom;
+
+		finBtnDom = document.getElementById("fgMobilebuttons");
+		blDom = finBtnDom.children[0];
+		brDom = finBtnDom.children[2];
+
+
+		finLeftDom = document.getElementById("fgcLeftBlock");
+		finRightDom = document.getElementById("fgcRightBlock");
+
+		finBtnDom.addEventListener('mouseup', buttonUp, false);
+
+	}
+
+	function buttonUp(eV) {
+		idStr = eV.target.id;
+		if (idStr !== "fgMobilebuttons") {
+
+			strSplit = idStr.split("_");
+			tmpStr = strSplit[1];
+
+			if (tmpStr !== actStr) {
+
+				actStr = tmpStr;
+
+				if (actStr === "L") {
+					blDom.className = "fgOn";
+					brDom.className = "fgOff";
+					finLeftDom.className = "fgcData fgmMobileOn";
+					finRightDom.className = "fgcData fgmMobileOff";
+				} else {
+					blDom.className = "fgOff";
+					brDom.className = "fgOn";
+					finLeftDom.className = "fgcData fgmMobileOff";
+					finRightDom.className = "fgcData fgmMobileOn";
+				}
+
+			}
+		}
+		console.log(idStr);
+	}
+
+
+
+	return PlanigrupoFinancialMatrix;
+
+})();
+
+
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+/* CARD EVENTS ** + + + + + + + + + + + + + + + + + + + + +>> */
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+var PlanigrupoCardEvents = (function() {
+
+	let imgCupDom;
+	let imgDom;
+	let cpyDom;
+
+	let hdlDom;
+	let plcDom;
+	let hdlGrp;
+	let plcGrp;
+
+	let arrLeft;
+	let arrRight;
+	let controlDom;
+	let dotGrp;
+	let activeDogGrp;
+	let dts;
+	let activeDot;
+	let endLen;
+	let grpLen;
+
+	let grpPosInfo;
+
+	let popOverDom;
+	let cardDom;
+	let cardGrp;
+	let cardPopupGrp;
+	let idStr;
+	let closeButton;
+	let closeCover;
+	let iDx = 0;
+	let jDx = 0;
+	let cardLen = 0;
+	let pLen = 0;
+	let posCnt = 0;
+
+	function PlanigrupoCardEvents(nDom) {
+		//console.log("EVENT CARDS FOUND");
+		popOverDom = document.getElementById("popOverShell");
+		closeCover = popOverDom.children[0];
+		closeButton = popOverDom.children[1].children[0];
+		cardDom = nDom;
+
+		hdlDom = popOverDom.children[1].children[1];
+		plcDom = popOverDom.children[1].children[2].children[0];
+
+
+		imgCupDom = popOverDom.children[1].children[3];
+		imgDom = imgCupDom.children[0];
+		controlDom = imgCupDom.children[1];
+		arrLeft = controlDom.children[0];
+		arrRight = controlDom.children[1];
+		cpyDom = popOverDom.children[1].children[4];
+
+		dotGrp = controlDom.children[2];
+
+		cardGrp = cardDom.children[0].children;
+		cardLen = cardGrp.length;
+
+		hdlGrp = [];
+		plcGrp = [];
+		cardPopupGrp = [];
+		grpPosInfo = [];
+
+		let tmpStr;
+		let tmpGrp;
+		//console.log("LOOK cardLen: " + cardLen);
+		for (iDx = 0; iDx < cardLen; iDx++) {
+			tmpStr = "eventCard_" + iDx;
+			tmpGrp = cardGrp[iDx];
+			let nBtn = tmpGrp.children[1];
+			nBtn.setAttribute("id", tmpStr);
+			nBtn.addEventListener('mousedown', showPopOver, false);
+
+			let popGrp = tmpGrp.children[2].children;
+			let subGrp = [];
+			pLen = popGrp.length;
+			//console.log("SUB GROUP LENGTH: " + pLen);
+			for (jDx = 0; jDx < pLen; jDx++) {
+				subGrp.push([popGrp[jDx].children[0].innerHTML, popGrp[jDx].children[1].innerHTML]);
+			}
+			cardPopupGrp.push(subGrp);
+			grpPosInfo.push(0);
+
+			hdlGrp.push( tmpGrp.children[0].children[0].innerHTML);
+			plcGrp.push( tmpGrp.children[0].children[1].children[0].innerHTML);
+		}
+
+		for (iDx = 0; iDx < cardLen; iDx++) {
+
+			grpLen = cardPopupGrp[iDx].length;
+			let subDotShell = document.createElement("div");
+			tmpStr = "dotGrp_" + iDx;
+			subDotShell.setAttribute("id", tmpStr);
+			subDotShell.style.display = "none";
+			subDotShell.style.width = (grpLen * 16).toString() + "px";
+
+			for (jDx = 0; jDx < grpLen; jDx++) {
+				let nDot = document.createElement("div");
+				if (!jDx) {
+					nDot.setAttribute("class", "sDotOnShadow");
+				} else {
+					nDot.setAttribute("class", "sDotShadow");
+				}
+				subDotShell.appendChild(nDot);
+			}
+			dotGrp.appendChild(subDotShell);
+		}
+		on();
+	}
+
+	function on() {
+		closeButton.addEventListener('mousedown', hidePopOver, false);
+		closeCover.addEventListener('mousedown', hidePopOver, false);
+
+		if (grpLen > 1) {
+			arrLeft.style.display = "block";
+			arrRight.style.display = "block";
+			dotGrp.style.display = "block";
+			arrLeft.addEventListener('mousedown', shiftLeft, false);
+			arrRight.addEventListener('mousedown', shiftRight, false);
+		}
+
+	}
+
+	function off() {
+		closeButton.removeEventListener('mousedown', hidePopOver, false);
+		closeCover.removeEventListener('mousedown', hidePopOver, false);
+		if (grpLen > 1) {
+			dotGrp.style.display = "none";
+			arrLeft.style.display = "none";
+			arrRight.style.display = "none";
+			arrLeft.removeEventListener('mousedown', shiftLeft, false);
+			arrRight.removeEventListener('mousedown', shiftRight, false);
+		}
+	}
+
+	function initPopOver() {
+
+		if (activeDogGrp !== undefined) {
+			activeDogGrp.style.display = "none";
+		}
+
+		posCnt = grpPosInfo[idStr];
+		//console.log("CARD ID: idStr: " + idStr + " posCnt: " + posCnt);
+
+		activeDogGrp = dotGrp.children[idStr];
+		dts = activeDogGrp.children;
+		activeDot = dts[posCnt];
+		endLen = (grpLen - 1);
+		activeDogGrp.style.display = "block";
+		setElements();
+
+		on();
+		popOverDom.style.display = "block";
+	}
+
+	function showPopOver(eV) {
+		idStr = eV.target.id;
+		idStr = idStr.split("_");
+		idStr = idStr[1];
+		grpLen = cardPopupGrp[idStr].length;
+		initPopOver();
+	}
+
+	function shiftRight() {
+		if (posCnt < endLen) {
+			posCnt++;
+		} else {
+			posCnt = 0;
+		}
+		shiftCardInfo();
+	}
+
+	function shiftLeft() {
+		if (posCnt > 0) {
+			posCnt--;
+		} else {
+			posCnt = endLen;
+		}
+		shiftCardInfo();
+	}
+
+	function shiftCardInfo() {
+		grpPosInfo[idStr] = posCnt;
+		activeDot.className = "sDotShadow";
+		activeDot = dts[posCnt];
+		activeDot.className = "sDotOnShadow";
+		setElements();
+	}
+
+	function setElements() {
+		imgDom.style.backgroundImage = "url('" + cardPopupGrp[idStr][posCnt][0] + "')";
+
+		hdlDom.innerHTML = hdlGrp[idStr];
+		plcDom.innerHTML = plcGrp[idStr];
+
+		//console.log("HEADER: " + hdlDom);
+
+		cpyDom.innerHTML = cardPopupGrp[idStr][posCnt][1];
+	}
+
+
+	function hidePopOver(eV) {
+		popOverDom.style.display = "none";
+		off();
+	}
+
+
+	return PlanigrupoCardEvents;
+
+})();
+
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+/* HOME STOCK TICKER ** + + + + + + + + + + + + + + + + + + + + +>> */
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+var PlanigrupoTrackForm = (function() {
+
+	let dlStr = "";
+	function PlanigrupoTrackForm(nDom) {
+
+		//console.log("FORM IS ON PAGE");
+
+		let nameStr = 'ftName';
+		let emailStr = "ftEmail";
+		let companyStr = "ftCompany";
+		let phoneStr = "ftTelephone";
+		let legalStr = "ftSelect_Legal";
+		let propertyStr = "ftSelect_Property";
+		let textareaStr = "ftComments";
+
+		let sfDom = document.getElementById("00N5A00000HQFp4");
+		if (sfDom !== null) {
+			console.log("SALES FORCE VARIABLES");
+			nameStr = 'first_name';
+			emailStr = "email";
+			companyStr = "company";
+			phoneStr = "phone";
+			legalStr = "00N5A00000HQFp4";
+			propertyStr = "00Ni000000Ekl2M";
+			textareaStr = "00Ni000000Dwzjf";
+		}
+
+		let domName = document.getElementById(nameStr);
+		let domLastName = document.getElementById('last_name');
+		let domEmail = document.getElementById(emailStr);
+		let domCompany = document.getElementById(companyStr);
+		let dommTelephone = document.getElementById(phoneStr);
+		let domComments = document.getElementById(textareaStr);
+		let domSelectLegal = document.getElementById(legalStr);
+		let domSelectProperty = document.getElementById(propertyStr);
+		let domSelectPosition = document.getElementById('ftSelect_Position');
+		let domSelectDivision = document.getElementById('ftSelect_Division');
+
+		if (domName !== null) {
+			domName.addEventListener('click', function( eV ) { trackForm(eV); }, false);
+		}
+		if (domLastName !== null) {
+			domLastName.addEventListener('click', function( eV ) { trackForm(eV); }, false);
+		}
+		if (domEmail !== null) {
+			domEmail.addEventListener('click', function( eV ) { trackForm(eV); }, false);
+		}
+		if (domSelectLegal !== null) {
+			domSelectLegal.addEventListener('change', function( eV ) { trackForm(eV); }, false);
+		}
+		if (domSelectProperty !== null) {
+			domSelectProperty.addEventListener('change', function( eV ) { trackForm(eV); }, false);
+		}
+		if (domSelectPosition !== null) {
+			domSelectPosition.addEventListener('change', function( eV ) { trackForm(eV); }, false);
+		}
+		if (domSelectDivision !== null) {
+			domSelectDivision.addEventListener('change', function( eV ) { trackForm(eV); }, false);
+		}
+		if (domCompany !== null) {
+			domCompany.addEventListener('click', function( eV ) { trackForm(eV); }, false);
+		}
+		if (dommTelephone !== null) {
+			dommTelephone.addEventListener('click', function( eV ) { trackForm(eV); }, false);
+		}
+		if (domComments !== null) {
+			domComments.addEventListener('click', function( eV ) { trackForm(eV); }, false);
+		}
+
+	}
+
+	function trackForm(eV) {
+		if (siteGo) {
+			dlStr = eV.target.id;
+			dataLayer.push({'event': dlStr});
+		}
+	}
+
+	return PlanigrupoTrackForm;
+
+})();
+
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+/* HOME STOCK TICKER ** + + + + + + + + + + + + + + + + + + + + +>> */
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+var PlanigrupoShowMobileSearchBar = (function() {
+
+	let searchBar;
+	let searchBtn;
+	let barState = false;
+
+	function PlanigrupoShowMobileSearchBar(nDom) {
+
+		//console.log("SEARCH BAR MOBILE");
+		searchBtn = nDom;
+		searchBar = document.getElementById("mobileSearchInput");
+
+		if (!pgDesktop) {
+			searchBtn.addEventListener('mouseup', toggleBar, false);
+		}
+	}
+
+	function toggleBar() {
+		if (barState) {
+			barState = false;
+			searchBar.className = "psaSearchShell";
+		} else {
+			barState = true;
+			searchBar.className = "psaSearchShell mbSIState";
+		}
+	}
+
+	PlanigrupoShowMobileSearchBar.prototype.off = function() {
+		searchBtn.removeEventListener('mouseup', toggleBar, false);
+	};
+
+	PlanigrupoShowMobileSearchBar.prototype.on = function() {
+		searchBtn.addEventListener('mouseup', toggleBar, false);
+	};
+
+	return PlanigrupoShowMobileSearchBar;
+
+})();
+
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+/* HOME STOCK TICKER ** + + + + + + + + + + + + + + + + + + + + +>> */
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+var PlanigrupoStockTicker = (function() {
+
+	let tickerDom;
+
+	let tickerDomGrp;
+	let tickerCup;
+	let arrLft;
+	let arrRght;
+
+	let tLen = 0;
+
+	let tCount = 0;
+
+	let actT;
+	let wDir = "";
+
+	function PlanigrupoStockTicker(nDom) {
+
+		//console.log("TICKER AVAILABLE");
+		tickerDom = nDom;
+		tickerDomGrp = tickerDom.children;
+
+		tickerCup = tickerDomGrp[3].children[0].children;
+		tLen = tickerCup.length;
+
+		arrLft = tickerDomGrp[4];
+		arrRght = tickerDomGrp[5];
+
+		if ( tLen > 1) {
+
+			actT = tickerCup[0];
+
+			arrLft.style.display = "block";
+			arrRght.style.display = "block";
+
+			arrLft.addEventListener('mouseup', btnLeft, false);
+			arrRght.addEventListener('mouseup', btnRight, false);
+		} else {
+			arrLft.style.display = "none";
+			arrRght.style.display = "none";
+		}
+
+	}
+
+	function btnLeft( eV ) {
+		if ( tCount > 0) {
+			tCount--;
+		} else {
+			tCount = (tLen - 1);
+		}
+		//console.log("LEFT: " + tCount);
+		wDir = "left";
+		if (siteGo) {
+			dataLayer.push({'event': 'newsTickerLeft'});
+		}
+		shiftTicker();
+	}
+
+	function btnRight( eV ) {
+		if ( tCount < (tLen - 1)) {
+			tCount++;
+		} else {
+			tCount = 0;
+		}
+		wDir = "right";
+		//console.log("RIGHT: " + tCount);
+		if (siteGo) {
+			dataLayer.push({'event': 'newsTickerRight'});
+		}
+		shiftTicker();
+	}
+
+	function shiftTicker() {
+		actT.style.display = "none";
+		actT = tickerCup[tCount];
+		actT.style.display = "block";
+	}
+
+	return PlanigrupoStockTicker;
+
+})();
+
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+/* PERCENTAGE CHECK ** + + + + + + + + + + + + + + + + + + + + +>> */
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+var PlanigrupoPageChecker = (function() {
+
+	let pgeW;
+	function PlanigrupoPageChecker() {
+		window.addEventListener("resize", pgeResize);
+	}
+
+	function pgeResize() {
+		pgeW = document.body.offsetWidth;
+		if (pgeW !== pgPageWidth) {
+			pgPageWidth = pgeW;
+
+			pageIsResized = true;
+
+			if (pgeW > 1024) {
+				pgDesktop = true;
+
+				if (mobileSearchPresent) {
+					pgMobileSearchBar.off();
+				}
+
+				if (aboutCapabilityPresent && aboutCapMobileOn) {
+					aboutCapMobileOn = false;
+					pgAboutCapMod.toggleListeners(pgDesktop);
+				}
+			} else {
+				pgDesktop = false;
+
+				if (mobileSearchPresent) {
+					pgMobileSearchBar.on();
+				}
+
+				if (aboutCapabilityPresent && !aboutCapMobileOn) {
+					aboutCapMobileOn = true;
+					pgAboutCapMod.toggleListeners(pgDesktop);
+				}
+			}
+			if (sliderAIsPresent) {
+				sliderA.fixSize();
+			}
+
+			if (sliderBIsPresent) {
+				sliderB.fixSize();
+			}
+
+
+		}
+	}
+
+	return PlanigrupoPageChecker;
+
+})();
+
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+/* PLANIGRUPO SLIDER FUNCTION ** + + + + + + + + + + + + + + + + + + + + +>> */
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+var PlanigrupoSlider = (function() {
+
+	function PlanigrupoSlider() {}
+
+	PlanigrupoSlider.prototype.slider = function(nDom, cID) {
+
+		let cloneID = cID;
+
+		let titleStr = "";
+		let dlStr = "";
+
+		let sliderGrpDom;
+		let controlGrp;
+		let shellDom;
+
+		let shellGrp;
+		let shellGrpClone;
+
+		let dotGrp;
+
+		let grpLen;
+		let endLen;
+
+		let shellW = 0;
+		let xStr = "0px";
+
+		let actXPos = 0;
+		let xPos = 0;
+		let xPosClone = 0;
+
+		let xSpd = 0;
+		let spdInt = 25;
+
+		let bannerPos = 0;
+
+		let buttonClick = true;
+		let buttonDown = false;
+
+		let dirStr = "";
+
+		let dts;
+		let activeDot;
+
+		let sliderBannerW = 940;
+
+		let sbMargin = 0;
+		let sBMWidth = (sliderBannerW + sbMargin);
+
+
+		let mveGo = true;
+		let pgW = document.body.offsetWidth;
+
+		sliderGrpDom = nDom.children;
+
+		controlGrp = sliderGrpDom[0].children;
+
+		titleStr = controlGrp[0].innerHTML;
+
+		titleStr = titleStr.replace(" ", "_");
+
+		let arrLft = controlGrp[1];
+		let arrRght = controlGrp[2];
+
+		shellDom = sliderGrpDom[1].children[0];
+		shellGrp = shellDom.children[0];
+
+		let bannerGrp = shellGrp.children;
+		let bannerCloneGrp;
+
+		//TOUCH VARS * >
+		let touchAreaDom = controlGrp[3];
+		let TouchGrp;
+		let Touch;
+		let TXStart;
+		let TYStart;
+		let tchTmrGo;
+		let tchTmr;
+		let bool_TGo = true;
+		let boolTriggered;
+		let bool_TMove;
+		let bool_TEnd;
+		let touchDir;
+		// * * * * * * *
+
+		let msTmr = 0;
+
+		let sizeMeGo = true;
+		let sizeWCheck = 0;
+		let sizeTmr;
+
+
+		let mobileTouchGo = false;
+
+		let scrollY = 0;
+		let syStore = 0;
+
+
+		grpLen = bannerGrp.length;
+
+		dotGrp = sliderGrpDom[2];
+
+		if ( grpLen > 1) {
+			/****************/
+			for (let iDx = 0; iDx < grpLen; iDx++) {
+				let nDot = document.createElement("div");
+				if (!iDx) {
+					nDot.setAttribute("class", "sDotOn");
+				} else {
+					nDot.setAttribute("class", "sDot");
+				}
+				dotGrp.appendChild(nDot);
+			}
+
+			dts = dotGrp.children;
+			activeDot = dts[0];
+			endLen = (grpLen - 1);
+
+			shellW = shellGrp.offsetWidth;
+
+			if (msIE) {
+				if (pgDesktop) {
+					shellW = grpLen * 1050;
+				} else {
+					shellW = grpLen * pgPageWidth;
+				}
+			}
+
+			console.log("SHELL WIDTH : " + shellW);
+
+			xPos = 0;
+			xStr = (xPos - shellW).toString() + "px";
+			shellGrp.style.left = xStr;
+			shellGrp.style.width = shellW + "px";
+			//shellGrp.style.backgroundColor = "blue";
+
+			shellGrpClone = shellGrp.cloneNode(true);
+			bannerCloneGrp = shellGrpClone.children;
+
+			shellGrpClone.className = "sliderGrpShell sliderFullUp";
+			shellGrpClone.setAttribute("id", cID);
+			xStr = (xPos).toString() + "px";
+			shellGrpClone.style.left = xStr;
+			shellGrpClone.style.width = shellW + "px";
+			//shellGrpClone.style.backgroundColor = "red";
+
+			shellDom.appendChild(shellGrpClone);
+
+
+			if (pgDesktop) {
+				arrLft.style.display = "block";
+				arrRght.style.display = "block";
+				arrLft.addEventListener('mousedown', function( eV ) { buttonLeft(); }, false);
+				arrRght.addEventListener('mousedown', function( eV ) { buttonRight(); }, false);
+
+				arrLft.addEventListener('mouseup', function( eV ) { buttonUp(eV); }, false);
+				arrRght.addEventListener('mouseup', function( eV ) { buttonUp(eV); }, false);
+				arrLft.addEventListener('mouseleave', function( eV ) { buttonUp(eV); }, false);
+				arrRght.addEventListener('mouseleave', function( eV ) { buttonUp(eV); }, false);
+			} else {
+				mobileTouchGo = true;
+				arrLft.style.display = "none";
+				arrRght.style.display = "none";
+				touchAreaDom.addEventListener('touchstart', function( eV ) { TGo(eV); }, false);
+				touchAreaDom.addEventListener('touchmove', function( eV ) { TMove(eV); }, false);
+				touchAreaDom.addEventListener('touchend', function( eV ) { TEnd(eV); }, false);
+				touchAreaDom.addEventListener('mouseover', function( eV ) { showDesktopArrows(eV); }, false);
+			}
+
+			console.log("RESIZE ME: " + nDom.id);
+
+			if (msEdge || msIE) {
+				msTmr = setTimeout(msDelay, 2000);
+			} else {
+				resizeBanner();
+				zeroBanners();
+			}
+
+			/****************/
+		}
+
+		function showDesktopArrows(eV) {
+			arrLft.style.display = "block";
+			arrRght.style.display = "block";
+			touchAreaDom.style.display = "none";
+			touchAreaDom.removeEventListener('touchstart', function( eV ) { TGo(eV); }, false);
+			touchAreaDom.removeEventListener('touchmove', function( eV ) { TMove(eV); }, false);
+			touchAreaDom.removeEventListener('touchend', function( eV ) { TEnd(eV); }, false);
+
+			arrLft.addEventListener('mousedown', function( eV ) { buttonLeft(); }, false);
+			arrRght.addEventListener('mousedown', function( eV ) { buttonRight(); }, false);
+
+			arrLft.addEventListener('mouseup', function( eV ) { buttonUp(); }, false);
+			arrRght.addEventListener('mouseup', function( eV ) { buttonUp(); }, false);
+			arrLft.addEventListener('mouseleave', function( eV ) { buttonUp(eV); }, false);
+			arrRght.addEventListener('mouseleave', function( eV ) { buttonUp(eV); }, false);
+
+		}
+
+		this.fixSize = function() {
+			if (sizeMeGo) {
+				sizeMeGo = false;
+				console.log("FIX SIZE");
+				sizeWCheck = pgPageWidth;
+				clearTimeout(sizeTmr);
+				sizeTmr = setTimeout(sizeTimer, 500);
+			}
+
+		};
+
+		function sizeTimer() {
+			if (sizeWCheck === pgPageWidth ) {
+				console.log("SIZING DONE");
+				sizeMeGo = true;
+				clearTimeout(sizeTmr);
+				resizeBanner();
+				zeroBanners()
+			} else {
+				console.log("SIZE CHECK AGAIN");
+				sizeWCheck = pgPageWidth;
+				clearTimeout(sizeTmr);
+				sizeTmr = setTimeout(sizeTimer, 500);
+			}
+		}
+
+		function msDelay() {
+			clearTimeout(msTmr);
+
+			if (pgDesktop) {
+				shellW = grpLen * 1050;
+			} else {
+				shellW = grpLen * pgPageWidth;
+			}
+
+			resizeBanner();
+			zeroBanners();
+		}
+
+		/** ** ** +++++++++++++++++++++++++++++++++++++++++++>*/
+		// TOUCH FUNCTIONS GO *** >
+		function TGo( eV ) {
+			TouchGrp = eV.targetTouches.length;
+			if ( TouchGrp === 1 ) {
+				if ( !bool_TGo ) {
+					Touch = eV.changedTouches[ 0 ];
+					TXStart = Touch.pageX;
+					TYStart = Touch.pageY;
+					bool_TGo = true;
+					tchTmrGo = true;
+					tchTmr = setTimeout(TouchTimedOut, 500);
+					scrollY = window.scrollY;
+					syStore = scrollY;
+				}
+			}
+			bool_TMove = false;
+			bool_TEnd = false;
+		}
+
+		function  TouchTimedOut() {
+			clearTimeout(tchTmr);
+			tchTmrGo = false;
+		}
+
+		function TMove( eV ) {
+			if ( bool_TGo ) {
+				scrollY = window.scrollY;
+				if ( TouchGrp === 1 ) {
+					Touch = eV.changedTouches[ 0 ];
+					if ( Touch.pageX > ( TXStart + 76 ) ) {
+						if ( tchTmrGo ) {
+							bool_TGo = false;
+							touchDir = "left";
+							boolTriggered = true;
+						}
+					} else if ( Touch.pageX < ( TXStart - 76 ) ) {
+						if ( tchTmrGo ) {
+							bool_TGo = false;
+							touchDir = "right";
+							boolTriggered = true;
+						}
+					}
+				}
+			}
+		}
+
+		function TEnd( eV ) {
+
+			if ( TouchGrp === 1 ) {
+				bool_TGo = false;
+				console.log("SYSTORE: " + syStore + " SCROLLY: " + scrollY);
+				if (syStore <= scrollY + 5 && syStore >= scrollY - 5) {
+					if ( boolTriggered ) {
+						boolTriggered = false;
+						if (Touch.pageY <= (TYStart + 48) && Touch.pageY >= (TYStart - 48)) {
+							if (buttonClick) {
+								buttonClick = false;
+								if (touchDir === "left") {
+									shifRight();
+								} else {
+									shiftLeft();
+								}
+								moveImages();
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// TOUCH FUNCTIONS END *** >
+
+		/** ** ** +++++++++++++++++++++++++++++++++++++++++++>*/
+
+		/****************************************************** */
+		//***[*]*** | | | | | | | | | | | | | | | | | | | | | |  */
+		/****************************************************** */
+
+		function buttonUp(eV) {
+			buttonDown = false;
+		}
+
+		function buttonRight() {
+			if (buttonClick) {
+				buttonClick = false;
+				buttonDown = true;
+				shiftLeft();
+				moveImages();
+			}
+		}
+
+		function buttonLeft() {
+			if (buttonClick) {
+				buttonClick = false;
+				buttonDown = true;
+				shifRight();
+				moveImages();
+
+			}
+		}
+
+		function shifRight() {
+			if (bannerPos > 0) {
+				bannerPos--;
+			} else {
+				bannerPos = endLen;
+			}
+			if ( pgW !== pgPageWidth ) {
+				pgW = pgPageWidth;
+				resizeBanner();
+				zeroBanners();
+			}
+
+			xPos += (sliderBannerW + sbMargin);
+
+			xSpd = spdInt;
+			dirStr = "left";
+			dlStr = titleStr + "_left_" + bannerPos;
+			if (siteGo) {
+				dataLayer.push({'event': dlStr});
+			}
+		}
+
+		function shiftLeft() {
+			if (bannerPos < endLen) {
+				bannerPos++;
+			} else {
+				bannerPos = 0;
+			}
+			if ( pgW !== pgPageWidth ) {
+				pgW = pgPageWidth;
+				resizeBanner();
+				zeroBanners();
+			}
+			xPos -= (sliderBannerW + sbMargin);
+			xSpd = -spdInt;
+			dirStr = "right";
+			dlStr = titleStr + "_right_" + bannerPos;
+			if (siteGo) {
+				dataLayer.push({'event': dlStr});
+			}
+		}
+		// * * * * * * * * * * * *
+		// MOVE IMAGES +++++++++++++++++++++++++++++++++++++++++++++++++++++++ >>>
+		// * * * * * * * * * * * *
+		function moveImages() {
+			if ( dirStr === "left") {
+				if (actXPos < xPos) {
+					mveGo = true;
+				} else {
+					mveGo = false;
+				}
+			} else {
+				if (actXPos > xPos) {
+					mveGo = true;
+				} else {
+					mveGo = false;
+				}
+			}
+			if (mveGo) {
+				actXPos += xSpd;
+				xStr = actXPos.toString() + "px";
+				shellGrp.style.left = xStr;
+
+				if (xPos >= 0 ) {
+					xPosClone = -shellW;
+				} else {
+					xPosClone = shellW;
+				}
+
+				if (bannerPos === 1 && dirStr === "right" ) {
+					xPosClone = -shellW;
+				}
+
+				xStr = (actXPos + xPosClone).toString() + "px";
+				shellGrpClone.style.left = xStr;
+				window.requestAnimationFrame(moveImages);
+
+			} else {
+				/* * * * */
+
+				//* * * * * * * * * * * * * * * * * * *
+				/** SNAP POSITION */
+				//* * * * * * * * * * * * * * * * * * *
+				if (!buttonDown) {
+					xStr = xPos.toString() + "px";
+					shellGrp.style.left = xStr;
+					if (xPos >= 0) {
+						xPosClone = -shellW;
+					} else {
+						xPosClone = shellW;
+					}
+
+					xStr = (xPos + xPosClone).toString() + "px";
+					shellGrpClone.style.left = xStr;
+				}
+				//* * * * * * * * * * * * * * * * * * *
+
+				if (bannerPos === 1 && dirStr === "left" ) {
+					xPos = -sBMWidth;
+					actXPos = xPos;
+					xPosClone = shellW;
+
+					xStr = xPos.toString() + "px";
+					shellGrp.style.left = xStr;
+
+					xStr = (xPos + xPosClone).toString() + "px";
+					shellGrpClone.style.left = xStr;
+				}
+
+
+				if (!bannerPos) {
+					zeroBanners();
+				}
+
+				if ( pgW !== pgPageWidth ) {
+					pgW = pgPageWidth;
+					resizeBanner();
+					zeroBanners();
+				}
+
+				activeDot.className = "sDot";
+				activeDot = dts[bannerPos];
+				activeDot.className = "sDotOn";
+
+				if (!buttonDown) {
+					buttonClick = true;
+				} else {
+					if (dirStr === "right") {
+						shiftLeft();
+					} else {
+						shifRight();
+					}
+					window.requestAnimationFrame(moveImages);
+				}
+
+			}
+		}
+		//**************************/
+
+		function zeroBanners() {
+			shellGrp.style.left = "0px";
+
+			xPosClone = -shellW;
+
+			shellGrpClone.style.left = (xPosClone).toString() + "px";
+			xPos = 0;
+			actXPos = 0;
+			bannerPos = 0;
+
+		}
+
+		function sizeBanners() {
+			if ( pgDesktop && sliderBannerW > 940 ) {
+				sliderBannerW = 940;
+			}
+			console.log("CHECK IF BANNER STILL IN MEMORY");
+
+			console.log("A * * * * * * * * * * * * * * * * * * * * *: " + pgPageWidth);
+
+			if (msEdge || msIE) {
+				bannerCloneGrp = shellGrpClone.children;
+			}
+			console.log("B * * * * * * * * * * * * * * * * * * * * *");
+
+			for (let iDx = 0; iDx < grpLen; iDx++ ) {
+				bannerGrp[iDx].style.width = sliderBannerW.toString() + "px";
+				bannerCloneGrp[iDx].style.width = sliderBannerW.toString() + "px";
+			}
+		}
+
+		//**************************/
+		function resizeBanner() {
+
+			pgW = pgPageWidth;
+
+
+			if (!pgDesktop) {
+				sbMargin = 0;
+				spdInt = 15;
+				sliderBannerW = pgPageWidth;
+			} else {
+				spdInt = 20;
+				sbMargin = 110;
+				sliderBannerW = 940;
+
+				if (mobileTouchGo) {
+					mobileTouchGo = false;
+					//touchAreaDom.removeEventListener('touchstart', function( eV ) { TGo(eV); }, false);
+					//touchAreaDom.removeEventListener('touchmove', function( eV ) { TMove(eV); }, false);
+					//touchAreaDom.removeEventListener('touchend', function( eV ) { TEnd(eV); }, false);
+					//touchAreaDom.removeEventListener('mouseover', function( eV ) { showDesktopArrows(eV); }, false);
+					//arrLft.style.display = "block";
+					//arrRght.style.display = "block";
+					showDesktopArrows();
+				} else {
+					touchAreaDom.style.display = "none";
+				}
+
+			}
+
+			sBMWidth = (sliderBannerW + sbMargin);
+
+			sizeBanners();
+
+			shellW = sBMWidth * grpLen;
+
+			shellGrp.style.width = shellW.toString() + "px";
+			shellGrpClone.style.width = shellW.toString() + "px";
+
+			/* * **/
+
+			console.log(
+					"pos:[ " + bannerPos +
+					" ] width: " + sliderBannerW +
+					" ] shell width: " + shellW +
+					" ] margin: " + sbMargin +
+					" ] sBMWidth: " + sBMWidth +
+					" ] b2cPageWidth: " + pgPageWidth +
+					" ] pgDesktop: " + pgDesktop
+			);
+
+
+		}
+		//**************************/
+		//**************************/
+		/****************************************************** */
+		/***[*]*** | | | | | | | | | | | | | | | | | | | | | |  */
+		/****************************************************** */
+	};
+
+	return PlanigrupoSlider;
+
+})();
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+/* KEY TENANT SLIDER ** + + + + + + + + + + + + + + + + + + + + +>> */
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+var KeyTenantsSlider = (function() {
+
+	let sliderGrpDom;
+	let controlGrp;
+	let shellDom;
+
+	let dotDom;
+	let dotGrp;
+	let actDot;
+	let tGrpLen = 0;
+	let dotCnt = 0;
+	let dotPos = 333;
+	let grpCnt = [];
+	let gLen;
+	let grpCntLen = 0;
+	let grpPos = 0;
+
+	let shellGrp;
+	let shellGrpClone;
+	let grpLen;
+	let tenantShellW = 0;
+	let xStr = "0";
+	let xPos = 0;
+	let xPosClone = 0;
+	let actXPos = 0;
+
+	//let actTntCount = 0;
+	let tntCnt = 0;
+	let tntColCount = 0;
+	let perCnt = 0;
+
+	let startPos = 0;
+	let xSpd = sliderSpeed;
+	let btnDir = "";
+
+	let btnDown = false;
+	let btnClick = true;
+
+	let dlStr = "";
+	let  titleStr = "";
+
+	let arrLft;
+	let arrRght;
+
+	//TOUCH VARS * >
+	let touchAreaDom;
+	let TouchGrp;
+	let Touch;
+	let TXStart;
+	let TYStart;
+	let tchTmrGo;
+	let tchTmr;
+	let bool_TGo = true;
+	let boolTriggered;
+	let bool_TMove;
+	let bool_TEnd;
+	let touchDir;
+	// * * * * * * *
+
+
+	function KeyTenantsSlider(nDom) {
+		sliderGrpDom = nDom.children;
+
+		titleStr = document.getElementById('ktHeadline').innerHTML;
+
+		titleStr = titleStr.replace(" ", "_");
+
+
+		shellDom = sliderGrpDom[0];
+		shellGrp = shellDom.children;
+		grpLen = shellGrp.length;
+		controlGrp = document.getElementById('keyTenantArrows');
+
+		/** DOTS **/
+		dotDom = document.getElementById('tenantDots');
+		/** >> */
+
+		////console.log("KEY TENANT SLIDER: " + grpLen + " : " + nDom.id);
+		if ( grpLen > 1) {
+
+			nDom.className = "ktSliderShell";
+			shellDom.className = "ktSliderGrp";
+
+			let tLen = 0;
+			let tGrp;
+			let gPad = 0;
+			let kTnt;
+			let tDx = 0;
+			let ktX = 0;
+			let strPos;
+			let ktRow = 0;
+			let ktFlip =  false;
+			let ktW = 0;
+			for (let iDx = 0; iDx < grpLen; iDx++) {
+
+				ktW = 960;
+
+				tGrp = shellGrp[iDx];
+				tGrp.className = "ktSliderDiv";
+				tGrp.style.height = "240px";
+				tGrp.style.padding = "0";
+
+				tLen = tGrp.children.length;
+				if (tLen) {
+					if (!iDx ||tLen === 11) {
+
+						tntColCount += 6;
+						grpCnt.push(6);
+						//console.log("FULL: " + iDx);
+
+						tGrp.style.width = "960px";
+
+						for (tDx = 0; tDx < tLen; tDx++) {
+							kTnt = tGrp.children[tDx];
+							kTnt.style.position = "absolute";
+							kTnt.style.margin = "0";
+
+							ktRow = tDx;
+							ktRow %= 6;
+							ktX = ktRow * 160;
+							strPos = (ktX + 10 ).toString() + "px";
+							strPos = (ktX + 10 ).toString() + "px";
+							kTnt.style.left = strPos;
+
+							if ( tDx >= 6) {
+								kTnt.style.top = "128px";
+							} else  {
+								kTnt.style.top = "8px";
+							}
+						}
+					} else {
+						//console.log("tLen: " + tLen);
+						ktRow = 0;
+						for (tDx = 0; tDx < tLen; tDx++) {
+							kTnt = tGrp.children[tDx];
+							kTnt.style.position = "absolute";
+							kTnt.style.margin = "0";
+
+							if (!ktFlip) {
+								ktFlip = true;
+								ktX = ktRow * 160;
+								strPos = (ktX + 10).toString() + "px";
+								kTnt.style.top = "8px";
+							} else {
+								ktFlip = false;
+								ktRow++;
+								kTnt.style.top = "128px";
+							}
+
+							kTnt.style.left = strPos;
+						}
+
+						if ((tLen % 2) === 1) {
+							ktRow++;
+						}
+						tntColCount += ktRow;
+						if ( tLen < 11) { ktW = (ktRow * 160); }
+						tGrp.style.width = ktW.toString() + "px";
+					}
+				}
+
+				tenantShellW += ktW;
+				tGrpLen++;
+
+				tGrp.style.left = (iDx * 960).toString() + "px";
+				gPad +=  15;
+				//console.log("tntColCount: " + tntColCount + " tLen: " + tLen);
+
+			}
+
+			grpCnt.push(ktRow);
+			grpCntLen = grpCnt[0];
+
+			gLen = grpCnt.length;
+
+			//console.log("tenantShellW: " + tenantShellW + " gPad: " + gPad);
+			shellDom.style.width = tenantShellW.toString() + "px";
+
+			/*********************** SET DOTS >>> */
+			for (let iDx = 0; iDx < tGrpLen; iDx++) {
+				let nDot = document.createElement("div");
+				nDot.setAttribute("class", "sDot sDRed");
+				dotDom.appendChild(nDot);
+			}
+			tGrpLen -=1;
+
+			dotGrp = dotDom.children;
+			actDot = dotGrp[0];
+			actDot.className = "sDotOn sdOnRed";
+
+			/***************************/
+			shellGrp = shellDom;
+
+			shellGrp.style.left = "0";
+
+			//console.log("END: " + tenantShellW + " : " + shellGrp.className);
+
+
+			shellGrpClone = shellGrp.cloneNode(true);
+			shellGrpClone.id = 'KeyTenantsClone';
+
+
+			xStr = (tenantShellW).toString() + "px";
+			shellGrpClone.style.left = xStr;
+
+			nDom.appendChild(shellGrpClone);
+
+			startPos = "10px";
+			actXPos = 10;
+			//console.log("TENANTS CLONE: " + shellGrpClone.id);
+
+			/***************************/
+
+			controlGrp = controlGrp.children;
+
+			touchAreaDom = controlGrp[0];
+			arrLft = controlGrp[1];
+			arrRght = controlGrp[2];
+
+			if (pgDesktop) {
+				arrLft.style.display = "block";
+				arrRght.style.display = "block";
+
+				arrLft.addEventListener('mousedown', function( eV ) { buttonLeft(); }, false);
+				arrRght.addEventListener('mousedown', function( eV ) { buttonRight(); }, false);
+
+				arrLft.addEventListener('mouseup', function( eV ) { buttonUp(); }, false);
+				arrRght.addEventListener('mouseup', function( eV ) { buttonUp(); }, false);
+				arrLft.addEventListener('mouseleave', function( eV ) { buttonUp(eV); }, false);
+				arrRght.addEventListener('mouseleave', function( eV ) { buttonUp(eV); }, false);
+
+
+			} else {
+				touchAreaDom.style.display = "block";
+				touchAreaDom.addEventListener('touchstart', function( eV ) { TGo(eV); }, false);
+				touchAreaDom.addEventListener('touchmove', function( eV ) { TMove(eV); }, false);
+				touchAreaDom.addEventListener('touchend', function( eV ) { TEnd(eV); }, false);
+
+				touchAreaDom.addEventListener('mouseover', function( eV ) { showDesktopArrows(eV); }, false);
+
+			}
+		} else {
+			//console.log("HIDE");
+			controlGrp.style.display = "none";
+		}
+
+		function showDesktopArrows(eV) {
+			arrLft.style.display = "block";
+			arrRght.style.display = "block";
+			touchAreaDom.style.display = "none";
+			touchAreaDom.removeEventListener('touchstart', function( eV ) { TGo(eV); }, false);
+			touchAreaDom.removeEventListener('touchmove', function( eV ) { TMove(eV); }, false);
+			touchAreaDom.removeEventListener('touchend', function( eV ) { TEnd(eV); }, false);
+
+			arrLft.addEventListener('mousedown', function( eV ) { buttonLeft(); }, false);
+			arrRght.addEventListener('mousedown', function( eV ) { buttonRight(); }, false);
+
+			arrLft.addEventListener('mouseup', function( eV ) { buttonUp(); }, false);
+			arrRght.addEventListener('mouseup', function( eV ) { buttonUp(); }, false);
+			arrLft.addEventListener('mouseleave', function( eV ) { buttonUp(eV); }, false);
+			arrRght.addEventListener('mouseleave', function( eV ) { buttonUp(eV); }, false);
+
+		}
+
+		/** ** ** +++++++++++++++++++++++++++++++++++++++++++>*/
+		// TOUCH FUNCTIONS GO *** >
+		function TGo( eV ) {
+			TouchGrp = eV.targetTouches.length;
+			if ( TouchGrp === 1 ) {
+				if ( !bool_TGo ) {
+					Touch = eV.changedTouches[ 0 ];
+					TXStart = Touch.pageX;
+					TYStart = Touch.pageY;
+					bool_TGo = true;
+					tchTmrGo = true;
+					tchTmr = setTimeout(TouchTimedOut, 500);
+				}
+			}
+			bool_TMove = false;
+			bool_TEnd = false;
+		}
+
+		function  TouchTimedOut() {
+			clearTimeout(tchTmr);
+			tchTmrGo = false;
+		}
+
+		function TMove( eV ) {
+			if ( bool_TGo ) {
+
+				if ( TouchGrp === 1 ) {
+					Touch = eV.changedTouches[ 0 ];
+					if ( Touch.pageX > ( TXStart + 76 ) ) {
+						if ( tchTmrGo ) {
+							bool_TGo = false;
+							touchDir = "left";
+							boolTriggered = true;
+						}
+					} else if ( Touch.pageX < ( TXStart - 76 ) ) {
+						if ( tchTmrGo ) {
+							bool_TGo = false;
+							touchDir = "right";
+							boolTriggered = true;
+						}
+					}
+
+				}
+			}
+
+		}
+
+		function TEnd( eV ) {
+
+			if ( TouchGrp === 1 ) {
+				bool_TGo = false;
+				if ( boolTriggered ) {
+					boolTriggered = false;
+					if (Touch.pageY <= (TYStart + 48) && Touch.pageY >= (TYStart - 48) ) {
+						if (btnClick) {
+							btnClick = false;
+							if (touchDir === "left") {
+								shiftLeft();
+							} else {
+								shiftRight();
+							}
+							moveTenants();
+						}
+					}
+				}
+			}
+		}
+
+		// TOUCH FUNCTIONS END *** >
+
+		function buttonUp() {
+			btnDown = false;
+		}
+
+		function buttonLeft() {
+			if (btnClick) {
+				btnClick = false;
+				btnDown = true;
+				shiftLeft();
+				moveTenants();
+			}
+		}
+
+		function shiftLeft() {
+			if (tntCnt > 0) {
+				tntCnt--;
+			} else {
+				tntCnt = tntColCount;
+			}
+			xSpd = 10;
+			xPos += 160;
+			btnDir = "left";
+			if (siteGo) {
+				dlStr = titleStr + "_left_" + tntCnt;
+				dataLayer.push({'event': dlStr});
+			}
+		}
+
+		function buttonRight() {
+			if (btnClick) {
+				btnClick = false;
+				btnDown = true;
+				shiftRight();
+				moveTenants();
+			}
+		}
+
+		function shiftRight() {
+			if (tntCnt < tntColCount) {
+				tntCnt++;
+			} else {
+				tntCnt = 0;
+			}
+			xSpd = -10;
+			xPos -= 160;
+			btnDir = "right";
+			if (siteGo) {
+				dlStr = titleStr + "_right_" + tntCnt;
+				dataLayer.push({'event': dlStr});
+			}
+		}
+
+		function moveTenants() {
+			if (actXPos !== xPos) {
+				actXPos += xSpd;
+				xStr = actXPos.toString() + "px";
+				shellGrp.style.left = xStr;
+
+				if (xPos >= 0 ) {
+					xPosClone = -tenantShellW;
+				} else {
+					xPosClone = tenantShellW;
+				}
+				xStr = (actXPos + xPosClone).toString() + "px";
+				shellGrpClone.style.left = xStr;
+
+				window.requestAnimationFrame(moveTenants);
+
+			} else {
+
+				if (btnDir === "right" ) {
+					if (tntCnt === tntColCount) {
+						//console.log("TOP");
+						if (xPos < 0) {
+							zeroTenants();
+						}
+					}
+				} else {
+					if (tntCnt === 1 && xPos > 0) {
+						//console.log("BOTTOM");
+						zeroTenants();
+					}
+				}
+
+				grpPos = Math.floor(tntCnt / 6);
+				////console.log(":::: >>> tntColCount: " + tntColCount + " dotPos: " + dotPos + " tntCnt: " + tntCnt + " grpPos: " + grpPos);
+
+				if (grpPos !== dotPos) {
+					swapDot();
+				}
+
+				if ( btnDown ) {
+					if (btnDir === "right") {
+						shiftRight();
+					} else {
+						shiftLeft();
+					}
+					window.requestAnimationFrame(moveTenants);
+				} else {
+					btnClick = true;
+				}
+
+			}
+
+		}
+
+		function zeroTenants() {
+			shellGrp.style.left = "0px";
+			shellGrpClone.style.left = (tenantShellW).toString() + "px";
+			xPos = 0;
+			actXPos = 0;
+			tntCnt = 0;
+			dotCnt = 0;
+			grpPos = 0;
+		}
+		function swapDot() {
+			dotPos = grpPos;
+			actDot.className = "sDot sDRed";
+			actDot = dotGrp[grpPos];
+			actDot.className = "sDotOn sdOnRed";
+		}
+
+	}
+
+	return KeyTenantsSlider;
+
+})();
+
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+/* PORTFOLIO MAP ** + + + + + + + + + + + + + + + + + + + + +>> */
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+var PlanigrupoPortfolioMap = (function() {
+
+	let mapDom;
+
+	let mapCVS;
+	let mapCTX;
+
+	let mapDS_CVS;
+	let mapDS_CTX;
+
+	let mapHL_CVS;
+	let mapHL_CTX;
+
+	let mapZ_CVS;
+	let mapZ_CTX;
+
+	let boxW = 940;
+	let boxH = 640;
+	let fullW = 1932;
+	let fullH = 1330;
+	let sPad = 25;
+
+	let stateMaps;
+	let mapImages;
+	let mapSpritesImg;
+
+	let stateLen = 0;
+
+	let nW = 0;
+	let nH = 0;
+	let dX = 0;
+	let dY = 0;
+	let tX = 0;
+	let tY = 0;
+	let iDx = 0;
+
+	let m_X = 0;
+	let m_Y = 0;
+	let clrPix;
+	let clrHex;
+	let wState;
+
+	let activeState = 100;
+	let activeClickState = 100;
+	let mapPos;
+	let rH;
+	let gH;
+	let bH;
+
+	let colorStates;
+	let urlStr = "";
+
+	let mapNumKey;
+	let mnKey = 0;
+
+	let buttonClick = false;
+	let strURL = "";
+	let useURL = false;
+	let dlStr = "";
+	let stateStr = "";
+
+
+	function PlanigrupoPortfolioMap(nDom) {
+
+		if (actLang === "english") {
+			urlStr = "/our-portfolio/";
+		} else {
+			urlStr = "/portafolio/"
+		}
+
+		//console.log("BUILD MAP!");
+
+		mapDom = nDom;
+
+		//SETUP STATES * * * * * * >>>
+		mapImages = [];
+
+		colorStates = {};
+		mapNumKey = {};
+
+		stateMaps = [
+			['Baja California'],
+			['Baja California Sur'],
+			['Campeche'],
+			['Chihuahua'],
+			['Coahuila'],
+			['Hidalgo'],
+			['Jalisco'],
+			['Mexico'],
+			['Michoacan'],
+			['Nayarit'],
+			['Nuevo Leon'],
+			['Oaxaca'],
+			['Puebla'],
+			['Sonora'],
+			['San Luis Potosi'],
+			['Tamaulipas'],
+			['Quintana Roo'],
+			['Queretaro']];
+
+		stateLen = stateMaps.length;
+
+		for ( iDx = 0; iDx < stateLen; iDx++ ) {
+			mapNumKey[ stateMaps[iDx] ] = iDx;
+		}
+
+		mapPos = [
+			[0,     0,    228,  331, 0,     0],
+			[100,   331,  314,  372, 228,   0],
+			[1525,  847,  213,  197, 542,   0],
+			[458,   91,   353,  428, 542,   197],
+			[775,   233,  249,  367, 0,     331],
+			[1035,  829,  111,  114, 249,   372],
+			[655,   732,  262,  258, 0,     698],
+			[988,   906,  121,  122, 262,   486],
+			[777,   895,  236,  168, 262,   608],
+			[658,   706,  100,  161, 383,   372],
+			[946,   382,  164,  313, 498,   625],
+			[1129,  1016, 302,  202, 662,   625],
+			[1089,  865,  146,  197, 262,   776],
+			[122,   13,   370,  449, 1284,   0],
+			[876,   607,  244,  228, 1040,   0],
+			[1016,  387,  176,  366, 1040,  228],
+			[1736,  766,  145,  277, 895,   109],
+			[985,   811,  94,   109, 895,   0]];
+
+
+		// * * * * * * >>>
+
+		//SCALER IMAGE
+		let iDom = document.createElement("img");
+		iDom.setAttribute("src", pWPUrl + "assets/portfolioMapScaler.png");
+		iDom.style.width = "100%";
+		iDom.style.height = "auto";
+		mapDom.appendChild(iDom);
+
+		canvasBuild();
+	}
+
+	function rgbToHex(nR, nG, nB) {
+
+		rH =  nR.toString(16);
+		if ( rH === 1 ) { rH = "0" + rH; }
+
+		gH = nG.toString(16);
+		if ( gH === 1 ) { gH = "0" + gH; }
+
+		bH = nB.toString(16);
+		if ( bH === 1 ) { bH = "0" + bH; }
+
+		return "#" + rH + gH + bH;
+	}
+
+	function canvasBuild() {
+		//CANVAS
+		mapCVS = document.createElement("canvas");
+		mapCVS.setAttribute("id", "PortfolioMapCanvas");
+		mapCVS.setAttribute("class", "selectOff");
+		mapCVS.width = fullW;
+		mapCVS.height = fullH;
+		mapDom.appendChild(mapCVS);
+
+		mapCTX = mapCVS.getContext("2d");
+
+		//HL CANVAS
+		mapHL_CVS = document.createElement("canvas");
+		mapHL_CVS.setAttribute("id", "mapHLCanvas");
+		mapHL_CVS.setAttribute("class", "selectOff clickOff");
+		mapHL_CVS.width = fullW;
+		mapHL_CVS.height = fullH;
+		mapDom.appendChild(mapHL_CVS);
+
+		mapHL_CTX = mapHL_CVS.getContext("2d");
+		mapHL_CTX.fillStyle = "#ababab";
+
+
+		//DROP SHADOW CANVAS
+
+		mapDS_CVS = document.createElement("canvas");
+		mapDS_CVS.setAttribute("id", "mapShadowCanvas");
+		mapDS_CVS.setAttribute("class", "selectOff clickOff");
+		mapDS_CVS.width = fullW;
+		mapDS_CVS.height = fullH;
+		mapDom.appendChild(mapDS_CVS);
+
+		mapDS_CTX = mapDS_CVS.getContext("2d");
+		mapDS_CTX.shadowOffsetX = 9;
+		mapDS_CTX.shadowOffsetY = 9;
+		mapDS_CTX.shadowColor = 'rgba(0,0,0,0.43)';
+		mapDS_CTX.shadowBlur = 23;
+
+		//ZOOM CANVAS
+		mapZ_CVS = document.createElement("canvas");
+		mapZ_CVS.setAttribute("id", "mapZoomCanvas");
+		mapZ_CVS.setAttribute("class", "selectOff clickOff");
+		mapZ_CVS.width = fullW;
+		mapZ_CVS.height = fullH;
+		mapDom.appendChild(mapZ_CVS);
+
+		mapZ_CTX = mapZ_CVS.getContext("2d");
+		mapZ_CTX.fillStyle = "#fb7710";
+
+
+		mapSpritesImg = new Image();
+		mapSpritesImg.src = pWPUrl + "assets/states/states_spritemap.png";
+		mapSpritesImg.onload = function() {
+			//console.log("MAP LOADED!");
+			drawMap();
+			mapCVS.addEventListener("mousemove", function(eV) { mouseOver(eV); }, false);
+			mapCVS.addEventListener("mousedown", function(eV) { mouseDown(eV); }, false);
+			mapCVS.addEventListener("mouseup", function(eV) { mouseUp(eV); }, false);
+		};
+
+	}
+
+	function mouseDown(eV) {
+		wState = colorStates[clrHex];
+		if (wState !== undefined) {
+			buttonClick = true;
+		}
+	}
+
+	function mouseOver(eV) {
+		if (!buttonClick) {
+
+			m_X = eV.offsetX;
+			m_Y = eV.offsetY;
+			m_X = ((m_X  / boxW ) * fullW );
+			m_Y = ((m_Y / boxH  ) * fullH);
+
+			clrPix = mapCTX.getImageData(m_X, m_Y, 1, 1).data;
+			clrHex = rgbToHex(clrPix[0], clrPix[1], clrPix[2]);
+
+			wState = colorStates[clrHex];
+
+			if (wState !== undefined) {
+				if ( wState !== activeState) {
+					activeState = wState;
+					drawState(wState, true, false);
+				}
+			} else {
+				activeState = 100;
+				mapHL_CTX.clearRect(0, 0, fullW, fullH);
+			}
+		}
+
+	}
+
+	function mouseUp(eV) {
+		//console.log(clrHex + " : " + clrHex);
+
+		if (wState !== undefined) {
+			if ( wState !== activeClickState) {
+				activeClickState = wState;
+				drawState(wState, false, true);
+			} else
+			{
+				buttonClick = false;
+			}
+		}
+	}
+
+
+	function drawMap() {
+
+		mapCTX.clearRect(0, 0, fullW, fullH);
+		mapCTX.drawImage(mapSpritesImg, 0, 973, 1399, 857, (429 + sPad ), (422 + sPad), 1399, 857);
+		//stateLen = 4;
+		for (iDx = 0; iDx < stateLen; iDx++) {
+			dX = mapPos[iDx][0] + sPad;
+			dY = mapPos[iDx][1] + sPad;
+			nW = mapPos[iDx][2];
+			nH = mapPos[iDx][3];
+			tX = mapPos[iDx][4];
+			tY = mapPos[iDx][5];
+
+			mapCTX.drawImage(mapSpritesImg, tX,tY, nW, nH, dX, dY, nW, nH);
+
+			m_X = ((dX+10) + (nW >> 1) );
+			m_Y = ((dY+10) + (nH >> 1) );
+			clrPix = mapCTX.getImageData(m_X, m_Y, 1, 1).data;
+			clrHex = rgbToHex(clrPix[0], clrPix[1], clrPix[2]);
+			colorStates[ clrHex ] = iDx;
+
+		}
+
+		if (actState !== "" && actState !== "State" && actState !== "Estado" ) {
+			mnKey = Number(mapNumKey[actState]);
+			if (actState !== undefined) {
+				drawState(mnKey, false, false);
+			}
+		}
+	}
+
+	function drawState(sNum, hlGo, urlGo) {
+
+		////console.log("DRAW STATE: " + stateMaps[sNum] + " actState: " + actState);
+		if (stateMaps[sNum] === undefined) { return; }
+		if (!hlGo) {
+			mapDS_CTX.clearRect(0, 0, fullW, fullH);
+			mapZ_CTX.clearRect(0, 0, fullW, fullH);
+		} else {
+			mapHL_CTX.clearRect(0, 0, fullW, fullH);
+		}
+
+		dX = mapPos[sNum][0] + sPad;
+		dY = mapPos[sNum][1] + sPad;
+		nW = mapPos[sNum][2];
+		nH = mapPos[sNum][3];
+		tX = mapPos[sNum][4];
+		tY = mapPos[sNum][5];
+
+		if (!hlGo) {
+			mapDS_CTX.drawImage(mapSpritesImg, tX, tY, nW, nH, ( dX - 1 ), ( dY - 1 ),( nW + 2 ), ( nH + 2 ));
+
+			mapZ_CTX.fillRect(( dX - 20 ), ( dY - 20 ),( nW + 40 ), ( nH + 40 ));
+			mapZ_CTX.globalCompositeOperation = "destination-atop";
+			mapZ_CTX.drawImage(mapSpritesImg, tX, tY, nW, nH, dX, dY, nW, nH);
+		} else {
+			mapHL_CTX.fillRect(( dX - 20 ), ( dY - 20 ),( nW + 40 ), ( nH + 40 ));
+			mapHL_CTX.globalCompositeOperation = "destination-atop";
+			mapHL_CTX.drawImage(mapSpritesImg, tX, tY, nW, nH, dX, dY, nW, nH);
+		}
+
+		if (urlGo) {
+			buttonClick = false;
+
+			////console.log("CURRENT URL: " + window.location.href + "MAP["+mapStateStr+"]" + "TENANT["+mapTenantStr+"]" + "SEARCH["+mapSearchStr+"]");
+
+			strURL = "?ps=";
+			if (mapSearchStr !== "") {
+				strURL += mapSearchStr;
+				useURL = true;
+			}
+			stateStr = stateMaps[activeClickState][0];
+			strURL += "&state=" + stateStr;
+			if (mapTenantStr !== "") {
+				strURL += "&tenant=" + mapTenantStr;
+				useURL = true;
+			}
+			dlStr = "Portfolio_Map_" + stateStr;
+			if (siteGo) {
+				dataLayer.push({'event': dlStr});
+			}
+			if (useURL) {
+				window.location.href = urlStr + strURL;
+			} else {
+				window.location.href = urlStr + "?ps=&state=" + stateMaps[activeClickState][0];
+			}
+		}
+
+	}
+
+	function fadeCheck() {
+		mapZ_CVS.removeEventListener("animationstart", fadeCheck, false);
+		mapDS_CVS.className = "selectOff clickOff";
+		mapZ_CVS.className = "selectOff clickOff"
+
+	}
+
+	return PlanigrupoPortfolioMap;
+
+})();
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+/* INVESTOR ACCORDIONS ** + + + + + + + + + + + + + + + + + + + + +>> */
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+var PlanigrupoInvestorAccordions = (function() {
+
+	function PlanigrupoInvestorAccordions(nDoms) {
+
+		let cellGrp;
+		let typeGrp;
+		let nLen = nDoms.length;
+		let sLen;
+		let iDx;
+		let sDx;
+		let classStr = "";
+
+		for(iDx = 0; iDx < nLen; iDx++) {
+
+			cellGrp = nDoms[iDx].children;
+			sLen = cellGrp.length;
+
+
+			for(sDx = 1; sDx < sLen; sDx++) {
+
+				typeGrp = cellGrp[sDx].children;
+
+				classStr = typeGrp[0].className;
+				if ( classStr.lastIndexOf('accArrow') !== -1 ) {
+					let newButton = typeGrp[0];
+					let newCup = typeGrp[1];
+					newButton.addEventListener('mouseup', function( eV ) { showContent(newButton, newCup); }, false);
+				}
+
+			}
+
+		}
+
+	}
+
+	function showContent(btnDom, cupDom) {
+		//console.log(btnDom.className);
+
+		if (btnDom.className === "accCell accArrow accArrUp") {
+			btnDom.className = "accCell accArrow";
+			cupDom.style.display = "none";
+		} else {
+			btnDom.className = "accCell accArrow accArrUp";
+			cupDom.style.display = "block";
+		}
+
+	}
+
+	return PlanigrupoInvestorAccordions;
+
+})();
+
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+/* INVESTOR NAVIGATION ** + + + + + + + + + + + + + + + + + + + + +>> */
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+var PlanigrupoInvestorNavigation = (function() {
+
+	let btnDom;
+	let mnuDom;
+	let navState = false;
+
+	function PlanigrupoInvestorNavigation(nDom) {
+		btnDom = nDom.children[0].children[0];
+		mnuDom = nDom.children[0].children[1];
+		btnDom.addEventListener('mouseup', toggleMenu, false);
+	}
+
+	function toggleMenu() {
+		if (!navState) {
+			navState = true;
+			mnuDom.className = "pgnBarCup";
+			btnDom.className = "pgnActiveLinkBtn selectArrow saUp";
+		} else {
+			navState = false;
+			mnuDom.className = "pgnBarCup pgnMnuHide";
+			btnDom.className = "pgnActiveLinkBtn selectArrow saDown";
+		}
+	}
+
+
+	return PlanigrupoInvestorNavigation;
+
+})();
+
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+/* ABOUT CAPABILITIES MODULE ** + + + + + + + + + + + + + + + + + + + + +>> */
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+var PlanigrupoCapMod = (function() {
+
+	let domModule;
+
+	let domDesktopNav;
+
+	let infoBlocks;
+	let linksGrp;
+	let mobileLinkGrp;
+
+	let actLink = null;
+	let actBlock = null;
+	let actMNav = null;
+	let actInt = 0;
+
+
+	let iDx = 0;
+	let modLen = 0;
+	let nNum = 0;
+	let nStr = "";
+	let strSplt = [];
+	let dlStr = "";
+	let titleStr = "";
+
+	function PlanigrupoCapMod( nDom ) {
+
+		domModule = nDom;
+		//console.log("CAPABILITY MODULE SETUP: " + domModule.id);
+
+		let dMGrp = domModule.children;
+		domDesktopNav = dMGrp[0];
+		let lGrp = domDesktopNav.children;
+
+		modLen = dMGrp.length;
+
+		linksGrp = [];
+		mobileLinkGrp = [];
+		infoBlocks = [];
+
+		for(iDx = 1; iDx < modLen; iDx++) {
+			let nBlock = dMGrp[iDx];
+			infoBlocks.push(nBlock);
+
+			mobileLinkGrp.push(nBlock.children[1]);
+
+		}
+
+		modLen -= 1;
+		for(iDx = 0; iDx < modLen; iDx++) {
+			linksGrp.push(lGrp[iDx]);
+		}
+
+		actMNav = mobileLinkGrp[actInt];
+		actLink = linksGrp[actInt];
+		actBlock = infoBlocks[actInt];
+
+		//console.log("DESKTOP: " + pgDesktop + " : " + modLen);
+
+		domDesktopNav.addEventListener('mouseup', changeCapScreen, false);
+		if (!pgDesktop) {
+			aboutCapMobileOn = true;
+			for(iDx = 0; iDx < modLen; iDx++) {
+				//console.log("ADD");
+				mobileLinkGrp[iDx].addEventListener('mouseup', changeCapScreen, false);
+			}
+		}
+	}
+
+	function changeCapScreen( eV ) {
+
+		nStr = eV.target.id;
+		strSplt = nStr.split("_");
+		nNum= Number(strSplt[2]);
+		nStr = strSplt[1];
+
+		if ( nNum !== actInt && nStr !== undefined) {
+			actLink.className = "";
+			actBlock.className = "cmInfoBlock cmIBMobile";
+
+			actBlock.children[2].className = "contentShell cmiMobileHide";
+			actMNav.className = "cmiMobileHeader selectOff cmiMBorderNone";
+			actMNav.children[1].className = "cmiMHArrow";
+
+
+			actInt = nNum;
+
+			actLink = linksGrp[actInt];
+			actLink.className = "cmLinkOn";
+
+			actBlock = infoBlocks[actInt];
+			actBlock.className = "cmInfoBlock cmIBActive";
+			actBlock.children[2].className = "contentShell";
+
+			actMNav = mobileLinkGrp[actInt];
+			actMNav.className = "cmiMobileHeader selectOff";
+			actMNav.children[1].className = "cmiMHArrowDown";
+			titleStr = actMNav.children[0].innerHTML;
+
+			window.location.href = "#" + titleStr;
+
+		}
+
+		if (siteGo) {
+			dlStr = "Accordion_Button_" + titleStr;
+			dataLayer.push({'event': dlStr});
+		}
+
+	}
+
+	PlanigrupoCapMod.prototype.toggleListeners = function( bState ) {
+		if (bState) {
+			for(iDx = 0; iDx < modLen; iDx++) {
+				mobileLinkGrp[iDx].removeEventListener('mouseup', changeCapScreen, false);
+			}
+		} else {
+			for(iDx = 0; iDx < modLen; iDx++) {
+				mobileLinkGrp[iDx].addEventListener('mouseup', changeCapScreen, false);
+			}
+		}
+	};
+
+	return PlanigrupoCapMod;
+
+})();
+
+
+
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+/* HEADER NAV ** + + + + + + + + + + + + + + + + + + + + +>> */
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+var PlanigrupoHeaderNav = (function() {
+
+	let navBtn;
+	let navLines;
+	let navState = false;
+	let navMnuH;
+	let langDom;
+
+	function PlanigrupoHeaderNav(nDom) {
+		navBtn = nDom;
+		navLines = navBtn.children[0].children;
+
+		pgTopNavDom = document.getElementById("headerNav");
+		navBtn.addEventListener('mouseup', toggleNav, false);
+
+		langDom = document.getElementById("headerLanguage");
+
+		// 51 is from margins and nav height - 60 from padding.   36 is from cell height
+		let nH = ( pgTopNavDom.children[0].children[0].children.length * 36 ) + 51;
+		navMnuH = (nH).toString() + "px";
+		new PlanigrupoSearch();
+	}
+
+	function  toggleNav() {
+		if (navState) {
+			navState = false;
+
+			pgShftMenuDom.style.height = "0";
+			pgTopNavDom.className = "headerHide";
+
+			navLines[0].className = "mBar";
+			navLines[1].className = "mBar";
+			navLines[2].className = "mBar";
+
+			langDom.className = "langOff";
+
+		} else {
+			navState = true;
+			pgTopNavDom.className = "headerShow";
+			pgShftMenuDom.style.height = navMnuH;
+
+			navLines[0].className = "mBar rPos";
+			navLines[1].className = "mBar hide";
+			navLines[2].className = "mBar rNeg";
+
+			langDom.className = "langOn";
+		}
+		pgNavOpen = navState;
+	}
+
+	return PlanigrupoHeaderNav;
+
+})();
+
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+/* SEARCH ** + + + + + + + + + + + + + + + + + + + + +>> */
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+var PlanigrupoSearch = (function() {
+
+	let sBtnDom;
+	let sBarDom;
+	let barState = false;
+	let hStr = '';
+
+	function PlanigrupoSearch() {
+		//console.log("TOP SEARCH  BAR!");
+		sBtnDom = document.getElementById("headerSearch");
+		sBarDom = document.getElementById("headerSearchBar");
+		sBtnDom.addEventListener('mouseup', btnUp, false);
+	}
+
+	function btnUp() {
+		if (!barState) {
+			barState = true;
+			sBarDom.style.display = "table";
+			pgShftSearchDom.style.height = "80px";
+
+		} else {
+			barState = false;
+			sBarDom.style.display = "none";
+			pgShftSearchDom.style.height = "0";
+		}
+		pgSearchOpen = barState;
+	}
+
+
+	return PlanigrupoSearch;
+
+})();
+
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+/* HERO ** + + + + + + + + + + + + + + + + + + + + +>> */
+/*  + + + + + + + + + + + + + + + + + + + + +>> */
+var PlanigrupoHero = (function() {
+
+	let fadeDom;
+	let heroDom;
+	let heroDomGrp;
+	let arrLft;
+	let arrRght;
+	let dotDom;
+	let dotGrp;
+	let heroBannerGrp;
+	let heroLen = 0;
+
+	let posCnt = 0;
+	let bnrCnt = 0;
+
+	let actHero;
+	let imgStrGrp;
+	let actDot;
+	let buttonClick = true;
+	let dlStr = "";
+	let dirStr = "";
+
+	let bTimer;
+	let bTime = 10000;
+
+	function PlanigrupoHero() {
+		heroDom = document.getElementById("HeroBanner");
+		if (heroDom != null) {
+
+			//console.log("HERO LOADED AND AVAILBLE");
+			/**
+			 * NEED TO CHECK IF CONTENT VIDEO!
+			 */
+
+			heroDomGrp = heroDom.children;
+			arrLft = heroDomGrp[0];
+			arrRght = heroDomGrp[1];
+
+			let hDGrp = heroDomGrp[2];
+			heroBannerGrp = hDGrp.children;
+			heroLen = heroBannerGrp.length;
+
+			//console.log("LENGTH: " + heroLen);
+
+
+			if (heroLen > 1) {
+				imgStrGrp = [];
+				let urlStr;
+
+				dotDom = heroDomGrp[3];
+				if (dotDom.className === 'heroBubbleShell') {
+					dotDom = dotDom.children[1];
+				}
+
+				for (let iDx = 0; iDx < heroLen; iDx++) {
+
+					urlStr = heroBannerGrp[iDx].style.backgroundImage;
+					imgStrGrp[iDx] = urlStr;
+
+					let nDot = document.createElement("div");
+					nDot.setAttribute("class", "sDot");
+					dotDom.appendChild(nDot);
+				}
+
+				dotGrp = dotDom.children;
+
+				actDot = dotGrp[0];
+				actHero = heroBannerGrp[0];
+
+				fadeDom = document.createElement('div');
+				fadeDom.setAttribute("class", "heroCup");
+				hDGrp.insertBefore(fadeDom, hDGrp.childNodes[0]);
+				fadeDom.style.backgroundImage = imgStrGrp[0];
+
+				arrLft.style.display = "block";
+				arrRght.style.display = "block";
+
+				arrLft.addEventListener('mouseup', btnLeft, false);
+				arrRght.addEventListener('mouseup', btnRight, false);
+
+				bTimer = setTimeout(advanceBanner, bTime);
+
+			} else {
+				arrLft.style.display = "none";
+				arrRght.style.display = "none";
+			}
+		}
+	}
+
+	function advanceBanner() {
+
+		buttonClick = false;
+		clearTimeout(bTimer);
+		if ( posCnt < (heroLen - 1)) {
+			posCnt++;
+		} else {
+			posCnt = 0;
+		}
+		dirStr = "right";
+		shiftHero();
+	}
+
+	function btnLeft( eV ) {
+		if (buttonClick) {
+			buttonClick = false;
+			if ( posCnt > 0) {
+				posCnt--;
+			} else {
+				posCnt = (heroLen - 1);
+			}
+			dirStr = "left";
+			shiftHero();
+		}
+	}
+
+	function btnRight( eV ) {
+		if (buttonClick) {
+			buttonClick = false;
+			if ( posCnt < (heroLen - 1)) {
+				posCnt++;
+			} else {
+				posCnt = 0;
+			}
+			dirStr = "right";
+			shiftHero();
+		}
+	}
+
+	function shiftHero() {
+
+		bnrCnt = posCnt + 1;
+
+		actHero.style.display = "none";
+		actHero = heroBannerGrp[bnrCnt];
+
+		actHero.className = "heroCup showHero";
+		actHero.style.display = "block";
+
+		actHero.addEventListener("animationend", fadeCheck, false);
+
+		actDot.className = "sDot";
+		actDot = dotGrp[posCnt];
+		actDot.className = "sDotOn";
+	}
+
+	function fadeCheck() {
+		actHero.removeEventListener("animationend", fadeCheck, false);
+		actHero.className = "heroCup";
+		fadeDom.style.backgroundImage = imgStrGrp[posCnt];
+		if (siteGo) {
+			dlStr = "Hero_Banner_" + dirStr;
+			dataLayer.push({'event': dlStr});
+		}
+		bTimer = setTimeout(advanceBanner, bTime);
+		buttonClick = true;
+	}
+
+	return PlanigrupoHero;
+
+})();
+
+
+planiGrupoMain();
